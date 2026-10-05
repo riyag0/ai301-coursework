@@ -15,17 +15,37 @@ label is not graded.
 
 **GitHub username**
 
-[Your GitHub username, exactly as it appears on your profile - no @, no
-profile URL. Your comment upstream is identified by this name, and it is
-the only thing that ties it to you. Several students may plan the same
-house issue, so this is what keeps their comments off your score and
-yours off theirs.]
+riyag0
 
 **Plan comment**
 
-[Link to the comment where you posted your plan on the issue. Use the comment's own
-permalink. **Then paste the text of that comment underneath the link** — the pasted text is
-what this field is graded on, so copy across what you actually posted.]
+https://github.com/codepath/pathreview-ai301-fa26-s1/issues/63#issuecomment-5984720700
+
+Plan
+My reproduction confirmed that test_readme_with_all_quality_signals uses a README fixture with a word count of 51, while the test expects:
+
+assert data["word_count"] > 100
+and:
+assert data["word_count_category"] == "comprehensive"
+
+The test is currently marked xfail(strict=True) for issue #63, so it reports XFAIL rather than a normal failure.
+
+Proposed change
+I plan to:
+
+Update the README fixture in tests/unit/test_readme_scorer.py with realistic content so that it reaches at least 500 words, the threshold required for the "comprehensive" category
+Keep the existing word_count > 100 and "comprehensive" assertions
+Remove the issue README scorer test fixture is too short for its own word-count assertion #63 xfail marker so the corrected test can pass normally
+Keep the change limited to the unit test rather than modifying the production README scoring logic
+Verification
+I will rerun:
+
+pytest tests/unit/test_readme_scorer.py -v -m unit
+
+Before the fix, test_readme_with_all_quality_signals reports XFAIL. After the fix, I expect it to report PASSED, with the rest of the README scorer unit tests continuing to pass.
+
+The main risk is that extending the fixture could affect another quality signal in the test, so I will preserve the existing fixture content and signals while adding only the content needed to represent the intended comprehensive README case.
+
 
 ---
 
@@ -33,15 +53,27 @@ what this field is graded on, so copy across what you actually posted.]
 
 **Branch**
 
-[The name of the branch you built the change on, exactly as it appears in your fork. The
-naming shape is a type prefix, then the issue number, then a short description. **The issue
-number in the branch name must be the number of the issue you claimed** — a name carrying
-any other number does not satisfy this field.]
+fix/63-readme-word-count
 
 **Evidence**
 
-[Your Unit 2 reproduction steps re-run against the built change: the before, then the
-after. Paste both, including the commands you ran and their output.]
+Before:
+
+Command:
+pytest tests/unit/test_readme_scorer.py -v -m unit
+
+Output:
+tests/unit/test_readme_scorer.py::TestReadmeScorer::test_readme_with_all_quality_signals XFAIL
+22 passed, 1 xfailed in 1.72s
+
+After:
+
+Command:
+pytest tests/unit/test_readme_scorer.py -v -m unit
+
+Output:
+tests/unit/test_readme_scorer.py::TestReadmeScorer::test_readme_with_all_quality_signals PASSED
+23 passed in 1.03s
 
 ## Eval iterations
 
@@ -50,28 +82,30 @@ fields.
 
 **Run history**
 
-[The agreement score of each run you did, in order. A single run is a complete answer if
-only one run occurred. **The last score in your list must match the agreement line in the
-`eval-run.txt` you committed** — that file is the record of your final run.]
+agreement: 19/20 scored items  (bar: 18/20: PASS)
+agreement: 19/20 scored items  (bar: 18/20: PASS)
+agreement: 18/20 scored items  (bar: 18/20: PASS)
+agreement: 19/20 scored items  (bar: 18/20: PASS)
 
 **Package analysis**
 
-[Pick one scored package (`pkg-01` through `pkg-20` — the four `calib-` packages are never
-scored). Name it by id, say what your rubric decided and what the gold label said, and
-explain why your rubric read it that way.]
+pkg-09
+
+Rubric decision: reject
+Gold label: accept
+
+The final eval shows "pkg-09 clear-accept      accept reject  NO  failed: Diagnosis matches evidence"
+
+My rubric rejected pkg-09 because it failed the "Diagnosis matches evidence" check. The gold label was accept, so this was the one disagreement in my final 19/20 run. The rubric read the package as not sufficiently connecting the proposed diagnosis to the reproduction evidence, even though the gold label considered the plan acceptable.
+
 
 **Check rationale**
 
-[Quote one check from the `rubric.md` you uploaded to `tools/plan-check/`, exactly as it reads now.
-Then say why it reads that way — what you revised to get there, or what you rejected in
-favour of it.]
+Diagnosis matches evidence "The diagnosis names a cause tied to a specific file or component, and that cause accounts for everything the repro evidence actually showed. It does not contradict or ignore a result the evidence reported." I wrote this check to require the diagnosis to be grounded in the actual reproduction evidence rather than simply repeating the issue's description. This matters because reproduction can reveal results that differ from the original issue report, such as a test reporting XFAIL instead of a normal failure. I wanted the check to accept a diagnosis only when the proposed cause explains the observed evidence and does not ignore or contradict those results.
 
 **Trade-offs**
 
-[Every check gives something up. Any one of these is a complete answer: a package whose
-result it changes, a canary you re-ran with `--only`, a case you accept it will miss, or a
-stated reason nothing changed elsewhere. "Nothing changed, and here is how I know" earns
-the point in full when the reason follows.]
+The "Diagnosis matches evidence" check trades some recall for stricter evidence grounding. In the final evaluation, pkg-09 had a gold label of accept but my rubric rejected it because it failed this check. I accept this tradeoff because the check helps prevent plans from passing when their diagnosis is not sufficiently supported by the reproduction evidence. The final rubric still achieved 19/20 agreement, with all other scored packages matching their gold labels.
 
 ---
 
