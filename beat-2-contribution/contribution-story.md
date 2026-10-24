@@ -8,11 +8,11 @@ format criteria grade exactly that. Your course repo link is the whole submissio
 files and no evidence uploads are part of Assignment 5.
 
 **Contribution Number:** [1]
-**Student:** [Student name]
-**GitHub Username:** [your GitHub username, exactly as it appears on your profile - no @, no
-profile URL. Your comments upstream are identified by this name.]
-**Issue:** [GitHub issue link]
+**Student:** Riya Gandhi
+**GitHub Username:** riyag0
+**Issue:** https://github.com/NITRR-Official/CampusOS/issues/23
 **Pull Request:** [GitHub PR link, once opened]
+
 
 One repository, built across units 5 to 8, telling the whole story of your real
 contribution. Fill it as you work, not at the end — the sections below ask for evidence that
@@ -61,9 +61,11 @@ I configured issue-scout with my fit profile, a GitHub search strategy, and rank
 
 **Unit 6: [one line on the tool work]**
 
-[2-4 sentences: the voice-guard, the repo-memory file. What broke or
-fell short, and what changed because of it. "Nothing broke" counts when
-it is true - say how you know.]
+I searched for good first issues that matched my experience with backend development, APIs, JavaScript/TypeScript, and databases. My issue-scout scan surfaced several possible issues, and I also manually reviewed issues to make sure they were still available and appropriate for a first contribution. I chose CampusOS #23 because it involves adding a backend PATCH endpoint for updating calendar events while preserving validation, authorization, and the existing controller structure. My issue-scout gave the issue an accept verdict with moderate difficulty. It fits my experience with REST APIs and backend development while giving me an opportunity to learn how to work within an unfamiliar open source backend and follow its existing architecture and conventions.
+
+The issue-scout helped me evaluate whether issues matched my skills and had a manageable scope, but the search results did not always show whether an issue was actually still available. Some open issues I reviewed already had contributors working on them or had work that was effectively completed. Because of this, I learned that I still needed to manually check the full issue activity before choosing an issue. During Unit 6, I also updated the scout's scope rubric so that bounded issues with some open edges are treated as difficulty signals instead of being automatically rejected.
+
+Claim comment: https://github.com/NITRR-Official/CampusOS/issues/23#issuecomment-6388620807
 
 **Unit 7: [one line on the tool work]**
 
