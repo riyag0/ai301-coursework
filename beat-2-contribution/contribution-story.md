@@ -1,4 +1,4 @@
-# Contribution: [Issue Title]
+# Contribution: [Calendar Core] Add Calendar Event Update Endpoint #23
 
 Path: `beat-2-contribution/contribution-story.md`
 
