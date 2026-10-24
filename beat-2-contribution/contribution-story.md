@@ -59,11 +59,10 @@ one in the week it belongs to.
 
 I configured issue-scout with my fit profile, a GitHub search strategy, and ranking rules, then used it to scan and grade potential issues. The initial scan over prioritized very new issues from the same repository because my ranking favored low comment counts and recent updates. I updated the strategy to keep at most one issue from the same repository, then manually reviewed newer issues and used the scout to grade my final two choices, both of which received an accept verdict.
 
-**Unit 6: [one line on the tool work]**
+**Unit 6: Added voice-guard protection and local repository memory for CampusOS**
 
-[2-4 sentences: the voice-guard, the repo-memory file. What broke or
-fell short, and what changed because of it. "Nothing broke" counts when
-it is true - say how you know.]
+I installed the voice-guard PreToolUse hook to check GitHub comment commands before they are sent and verified that the hook was wired correctly using a harmless gh issue comment --help command. I also created a local CLAUDE.local.md file for CampusOS that records the repository's contribution rules, build and test commands, and the calendar backend architecture I found during a scoped orientation. The initial orientation only showed that feature APIs were loaded through plugins, so I inspected the calendar plugin and updated the memory with the exact route, controller, service, repository, schema, and test locations. I kept CLAUDE.local.md out of the contribution using .git/info/exclude and confirmed this worked because git status --short remained empty.
+
 
 **Unit 7: [one line on the tool work]**
 
@@ -88,11 +87,11 @@ Claim comment: https://github.com/NITRR-Official/CampusOS/issues/23#issuecomment
 
 **Toolkit**
 
-- Tool: issue-scout (your scout: your search strategy, your rubric),
-  and how you used it
-- What it produced: [the scan and its verdict on this issue, described]
-- Difficulties: [where it fell short, or "none met" if none did]
-- What changed: [what you patched or would update, or "nothing"]
+- Tool: issue-scout, using my fit profile, GitHub search strategy, and scope rubric to scan and grade candidate issues
+- What it produced: The scout graded CampusOS #23 as accept with moderate difficulty and identified it as a good match for my backend and API experience
+- Difficulties: The scan did not always show whether an open issue was actually still available, and some issues I reviewed already had contributors working on them or work that was effectively completed 
+- What changed: I manually checked the full GitHub issue activity before choosing an issue and updated the scout's scope rubric so that bounded uncertainty affects the difficulty rating instead of automatically rejecting an issue
+
 
 ---
 
