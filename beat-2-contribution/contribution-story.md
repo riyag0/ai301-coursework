@@ -126,31 +126,86 @@ Claim comment: https://github.com/NITRR-Official/CampusOS/issues/23#issuecomment
 
 **Environment Setup**
 
-[What a stranger would need to stand this up: your operating system,
-the relevant versions (language, runtime, package manager, the project
-itself), and how you set the project up. Then the challenges you faced
-and how you solved them, or that none came up.]
+- OS: Windows 11
+- Repository: NITRR-Official/CampusOS
+- Branch: feature/23-calendar-event-update
+- Repository commit: 42634891f02a6538043d15cfbf97845a25a94aa3
+- Node.js: v24.21.0
+- pnpm: 10.25.0 through Corepack
+- Dependencies installed from the repository root with `corepack pnpm install`
+
+I used Corepack to run the repository's configured pnpm version because `pnpm` was not directly available on my PATH. The install completed successfully. I also ran corepack pnpm test from plugins/calendar. The test command started the plugin's vitest run script, but failed because vitest was not recognized as a command. I therefore reproduced the missing feature by tracing the current calendar API registration and its controller, service, validation, and repository layers.
 
 **Steps to Reproduce**
 
-1. [Step 1]
-2. [Step 2]
-3. [Observed result]
+1. Open `plugins/calendar/backend/src/routes/calendar.routes.js`
+2. Review the registered calendar routes. The file registers GET routes for listing, range queries, and individual events, a POST route for creating events, and a DELETE route for deleting events
+3. Check for the endpoint requested by issue #23: `PATCH /api/v1/calendar/:eventId`
+4. Open `plugins/calendar/backend/src/controller/calendar.controller.js` and review the exported handlers
+5. Open `plugins/calendar/backend/src/service/calendar.service.js` and review the available calendar service operations
+6. Open `plugins/calendar/backend/src/schema/calendar.schema.js` and review the request validation schemas
+7. Open `plugins/calendar/backend/src/repository/calendar-event.repository.js` and compare the repository contract with the higher API layers
 
 **Reproduction Evidence**
 
-- **Commit showing reproduction:** [link to commit in your fork]
-- **Screenshots/logs:** [if applicable]
-- **My findings:** [what you discovered during reproduction; an
-  honest, evidenced cannot-reproduce that led you to re-pick or ask
-  the maintainer belongs here and costs you nothing]
+The requested `PATCH /api/v1/calendar/:eventId` endpoint is not currently registered in `calendar.routes.js`.
+
+```javascript
+export function registerCalendarRoutes(
+  app,
+  calendarController,
+  requirePermissions
+) {
+  const manageCalendar = requirePermissions('calendar:manage');
+
+  app.get('/api/v1/calendar', calendarController.list);
+  app.get('/api/v1/calendar/range', calendarController.queryByRange);
+  app.get('/api/v1/calendar/:eventId', calendarController.getById);
+  app.post('/api/v1/calendar', manageCalendar, calendarController.create);
+  app.delete(
+    '/api/v1/calendar/:eventId',
+    manageCalendar,
+    calendarController.deleteEvent
+  );
+}
+
+export default registerCalendarRoutes;
+```
+
+The controller exposes create, list, range query, get-by-ID, and delete handlers, but no update handler. The service similarly has no update operation, and the schema file contains create and range query validation but no update schema.
+
+The repository layer already defines an `updateEvent(id, changes)` contract and notes that it exists to support future event editing for issue #23. This shows that update support has been prepared at the persistence layer, but it is not yet exposed through the service, controller, validation, or API route.
+
+```javascript
+
+ /**
+   * Apply partial changes to an existing event.
+   *
+   * Only the fields present in `changes` are modified; omitted fields are left
+   * unchanged. This method is part of the repository contract to support future
+   * event editing (forward-looking for issue #23) even though the current
+   * service does not yet expose an update operation.
+   *
+   * @abstract
+   * @param {string} id The domain identifier of the event to update.
+   * @param {UpdateCalendarEventChanges} changes Partial set of fields to apply.
+   * @returns {Promise<CalendarEvent|null>} Resolves with the updated event as a
+   *   normalized domain object, or `null` when no event has the given id.
+   */
+```
+
+Expected behavior: an authorized user should be able to send a partial or full update through `PATCH /api/v1/calendar/:eventId`, with the existing validation and authorization rules preserved
+
+Observed behavior: no PATCH route or corresponding controller/service/update-validation path currently exists, so the update endpoint described in issue #23 is not available
+
+Reproduction commit: 42634891f02a6538043d15cfbf97845a25a94aa3
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: repro-check, used to grade my claim comment and reproduction report against CampusOS issue #23
+- What it produced: The final check returned an accept verdict with all five reproduction checks passing
+- Difficulties: My first reproduction report did not include direct code evidence, and a later check found that I had not identified the exact repository commit used for reproduction
+- What changed: I added excerpts from the calendar route and repository files as evidence, recorded the exact commit I reproduced against, and revised the test description to state only what I directly observed
 
 ---
 
