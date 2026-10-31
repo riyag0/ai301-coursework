@@ -99,26 +99,34 @@ Claim comment: https://github.com/NITRR-Official/CampusOS/issues/23#issuecomment
 
 **Problem Description**
 
-[In your own words, what is broken or missing?]
+CampusOS currently does not provide an API endpoint for updating an existing calendar event. The repository layer already supports partial event updates through updateEvent(id, changes), but that functionality is not exposed through the service, controller, validation schema, or routes
 
 **Expected Behavior**
 
-[What should happen?]
+An authorized user should be able to send a partial or full update to PATCH /api/v1/calendar/:eventId. The endpoint should allow supported calendar fields such as the title, event type, dates, description, and linked references to be updated while preserving the existing validation and authorization rules. Invalid updates should not be accepted and a request for an event that does not exist should return a 404 response.
 
 **Current Behavior**
 
-[What actually happens?]
+registerCalendarRoutes currently registers GET, POST, and DELETE operations but does not register a PATCH route. createCalendarController does not expose an update handler, CalendarService does not provide an update operation and a calendar.schema.js does not contain a schema for validating partial updates. As a result, the existing repository update functionality cannot currently be reached through the calendar API.
 
 **Affected Components**
 
-[Which parts of the codebase are involved?]
+- plugins/calendar/backend/src/routes/calendar.routes.js - registerCalendarRoutes needs to register the PATCH endpoint using the existing calendar:manage permission
+- plugins/calendar/backend/src/controller/calendar.controller.js -
+createCalendarController needs an update handler that validates the request, calls the service, handles a missing event, and returns the updated event
+- plugins/calendar/backend/src/service/calendar.service.js - CalendarService needs to expose the update operation and coordinate any validation that requires the existing event state
+- plugins/calendar/backend/src/schema/calendar.schema.js - needs validation for partial calendar event updates while preserving the existing field and date rules
+- plugins/calendar/backend/src/repository/calendar-event.repository.js and mongo-calendar-event-repository.js - already provide updateEvent(id,changes), so the existing repository update path can be reused rather than replaced
+- plugins/calendar/backend/src/controller/calendar.controller.test.js and related calendar tests - need coverage for successful updates, partial updates, validation failures, 404 behavior, persistence, and authorization
+
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: Manual code tracing, used to inspect the calendar route, controller, service, schema, repository, MongoDB repository, and existing controller tests
+- What it produced: I traced the missing update path from the API route down to the persistence layer and found that updateEvent(id,changes) already exists in the repository while the route, controller, service, and update validation are missing
+- Difficulties: The repository already contained update support and additional fields intended for future calendar features, so I needed to distinguish what was already implemented from what issue #23 actually requires
+- What changed: I narrowed the planned work to exposing the existing repository update capability through the current calendar architecture and keeping the implementation limited to the fields and behavior required by issue #23
+
 
 ---
 
@@ -213,29 +221,41 @@ Reproduction commit: 42634891f02a6538043d15cfbf97845a25a94aa3
 
 **Analysis**
 
-[Your analysis of the root cause: what is causing the issue, traced
-to the files and functions involved.]
+The issue is caused by a missing connection between the existing repository update functionality and the calendar API. CalendarEventRepository already defines updateEvent(id,changes) and MongoCalendarEventRepository implements it using findByIdAndUpdate, but CalendarService does not expose an update method. createCalendarController therefore has no update handler, calendar.schema.js has no schema for validating partial updates and registerCalendarRoutes has no PATCH route.
+
+I confirmed this by tracing the current calendar backend implementation. registerCalendarRoutes contains GET, POST, and DELETE routes but no PATCH route. createCalendarController has no update handler, while the repository contract and MongoDB repository already contain updateEvent(id,changes). This shows that the persistence operation exists but is not currently connected to the API.
+
+Partial date updates also need special handling. If a request changes only startsAt or only endsAt, validating only the request body is not enough to determine whether the resulting event has a valid date range. The update flow needs to preserve the existing date-range rule while allowing fields that were not included in the PATCH request to remain unchanged.
+
 
 **Proposed Solution**
 
-[High-level description of your fix approach, and what you are
-deliberately NOT changing.]
+Add the missing update path while following the existing calendar backend architecture. I will add an update validation schema in calendar.schema.js, expose an updateEvent operation through CalendarService, add an update handler to createCalendarController, and register PATCH /api/v1/calendar/:eventId in registerCalendarRoutes using the existing calendar:manage permission.
+
+The update should support partial requests, preserve the existing field and date validation rules, return a 404 when the event does not exist, and use the existing repository updateEvent implementation for persistence. I will not replace the repository implementation, change the database model, or add unrelated future calendar features such as recurrence or team assignment.
+
 
 **Implementation Plan**
 
-1. [Modify file X to do Y]
-2. [Add or change Z]
-3. [Update tests]
+1. Modify plugins/calendar/backend/src/schema/calendar.schema.js to add a schema for partial event updates using the existing validation rules, including validation for supported fields and date values
+2. Modify plugins/calendar/backend/src/service/calendar.service.js, controller/calendar.controller.js and routes/calendar.routes.js to connect
+the existing repository updateEvent operation to PATCH /api/v1/calendar/:eventId, preserve date-range validation for partial updates, return 404 for missing events, and protect the route with calendar:manage
+3. Update plugins/calendar/backend/src/controller/calendar.controller.test.js and the related calendar service tests to cover successful and partial updates, invalid input and date ranges, nonexistent events, persistence, and authorization. Run the calendar tests with corepack pnpm -r run test. The update tests should pass and the existing calendar test suite should continue to pass without regressions
 
-[Record deviations here as they happen: what changed mid-build and
-why. A recorded deviation is honest work; silent drift is not.]
+**Unknowns/Risks**
+
+The exact handling for date validation still needs to be confirmed during implementation because a partial update may provide only one date while the other date already exists on the stored event. I also need to confirm how malformed event IDs are currently handled so that the update endpoint follows the project's existing error behavior instead of assuming every missing or invalid ID should be handled the same way. The maintainer also mentioned PR #116 in the issue thread, but it does not currently appear to change the calendar files involved in this implementation.
+
+No deviations yet. This plan will be updated if the implementation needs to change after plan-check or while building the fix.
+
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: plan-check, used to review my implementation plan against the issue requirements, repository structure, and testing expectations
+- What it produced: It reviewed my plan and identified missing evidence, a more specific testing plan, and unknowns that needed to be documented before implementation
+- Difficulties: My first plan-check was rejected because the plan did not include enough evidence for the diagnosis, specific test files and commands, or the remaining risks around partial date updates and malformed event IDs
+- What changed: I added code tracing evidence to the analysis, made the testing plan more specific with test files, commands, and expected results, and documented the remaining risks. After these changes, plan-check accepted the plan
+
 
 ---
 
