@@ -116,7 +116,7 @@ registerCalendarRoutes currently registers GET, POST, and DELETE operations but 
 createCalendarController needs an update handler that validates the request, calls the service, handles a missing event, and returns the updated event
 - plugins/calendar/backend/src/service/calendar.service.js - CalendarService needs to expose the update operation and coordinate any validation that requires the existing event state
 - plugins/calendar/backend/src/schema/calendar.schema.js - needs validation for partial calendar event updates while preserving the existing field and date rules
-- plugins/calendar/backend/src/repository/calendar-event.repository.js and mongo-calendar-event-repository.js - already provide updateEvent(id,changes), so the existing repository update path can be reused rather than replaced
+- plugins/calendar/backend/src/repository/calendar-event.repository.js and mongo-calendar-event.repository.js - already provide updateEvent(id,changes), so the existing repository update path can be reused rather than replaced
 - plugins/calendar/backend/src/controller/calendar.controller.test.js and related calendar tests - need coverage for successful updates, partial updates, validation failures, 404 behavior, persistence, and authorization
 
 
