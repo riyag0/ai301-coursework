@@ -64,10 +64,9 @@ I configured issue-scout with my fit profile, a GitHub search strategy, and rank
 I installed the voice-guard PreToolUse hook to check GitHub comment commands before they are sent and verified that the hook was wired correctly using a harmless gh issue comment --help command. I also created a local CLAUDE.local.md file for CampusOS that records the repository's contribution rules, build and test commands, and the calendar backend architecture I found during a scoped orientation. The initial orientation only showed that feature APIs were loaded through plugins, so I inspected the calendar plugin and updated the memory with the exact route, controller, service, repository, schema, and test locations. I kept CLAUDE.local.md out of the contribution using .git/info/exclude and confirmed this worked because git status --short remained empty.
 
 
-**Unit 7: [one line on the tool work]**
+**Unit 7: Built and tested the CampusOS calendar update endpoint and used ship-gate to prepare the contribution for a PR**
 
-[2-4 sentences: the ship-gate and your gate manifest. What it produced
-on your real branch, what fought you, what changed because of it.]
+I created a ship manifest with the repository's required test, lint, type check, and build commands and used those checks on my contribution branch. The checks confirmed that the calendar tests passed 115/115 along with the repository tests, lint, type check, and build. The ship-gate hook did not trigger correctly through Claude Code, so I switched to running the ship-gate manually before opening the PR. I also documented the repository's existing formatting failures and verified the nine files changed by my implementation separately with Prettier.
 
 **Unit 8: [one line on the tool work]**
 
@@ -261,39 +260,45 @@ No deviations yet. This plan will be updated if the implementation needs to chan
 
 ## Testing Strategy
 
-[What observable checks prove the fix: your reproduction steps re-run
-against the built change (before and after), and the repo's own test
-suite or checks with the outcome shown. "Tests pass" with nothing
-observable named is not a strategy.]
+I tested the fix at both the focused calendar plugin and across the repository. Before the fix, I checked out the reproduction commit 42634891f02a6538043d15cfbf97845a25a94aa3 in a separate worktree and ran the calendar test suite. All 93 existing tests passed which confirmed the baseline before the update endpoint was added.
+
+After implementing the fix, I ran corepack pnpm --filter @campusos/plugin-calendar test. All 6 test files and 115 tests passed. The new tests cover successful partial updates, persistence, invalid date ranges, clearing endsAt, empty or unsupported update fields, missing events, authorization, and service to repository behavior.
+
+I also ran the repository wide test suite with corepack pnpm -r run test, which passed without a recursive test failure. I ran the repository lint checks which completed with no errors and one pre existing frontend warning, the frontend TypeScript check with corepack pnpm -r --filter frontend run type-check and the frontend build with corepack pnpm -r --filter frontend run build. Both completed successfully. git diff --check HEAD^ HEAD also returned no output which confirmed that there were no whitespace errors.
+
+The repository wide formatting check has 632 pre existing formatting failures unrelated to issue #23, so I did not use it as evidence that this change introduced a formatting problem. Instead, I ran Prettier against the nine files changed by my implementation and all nine passed the formatting check.
+
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: ship-gate manifest and repository test commands which was used to verify the implementation against the focused calendar tests and the repository's required checks
+- What it produced: The calendar suite passed 115/115 tests after the fix compared with 93/93 at the baseline commit and the repository tests, lint, type check, build, whitespace check, and changed file formatting checks passed  
+- Difficulties: The repository wide formatting check reports 632 existing formatting failures unrelated to my change and the repository's root test wrapper initially had a pnpm PATH issue on Windows
+- What changed: I documented the repository wide formatting failure as a baseline condition, verified formatting only on the nine files changed by the fix and used Corepack to run the repository's configured pnpm version
 
 ---
 
 ## Implementation Notes
 
-[A running log, added to as you work. Date each entry. What you
-built, decisions you made when you made them, wrong turns included.]
+2026-10-31
 
-**[Date]**
+I implemented PATCH /api/v1/calendar/:eventId using the existing calendar route, controller, service, and repository architecture. I added a partial update validation schema, an update handler in the controller, an updateEvent service method, and registered the PATCH route with the existing calendar:manage permission. I reused the repository's existing updateEvent implementation instead of adding new database logic.
 
-[Entry]
+For date updates, I handled the risk identified in my implementation plan by validating the final event state. When only startsAt or endsAt is provided, the service retrieves the existing event and validates the new date against the stored counterpart while still rejecting an invalid resulting date range. The existing 404 behavior is also preserved when an event cannot be found.
 
-**[Date]**
+I added tests for partial updates, persistence, invalid date ranges, missing events, authorization, clearing endsAt, validation failures, and service to repository behavior. I also updated the existing service method exposure test from five methods to six so that it includes the new updateEvent method.
 
-[Entry]
+The implementation stayed within the accepted plan. I made two small supporting changes that did not change the planned behavior. I updated a stale repository comment that described updateEvent as future functionality and I updated the existing service method test to account for the newly exposed method. I did not add unrelated calendar features such as recurring events, notifications, or team assignment.
+
+During the commit, the repository's pre commit hook ran the global formatter and modified many unrelated files because the repository already contains formatting differences. Only the nine intended files had been staged, so the implementation commit contained only those files. I discarded the unrelated formatter changes afterward and confirmed that the working tree was clean.
+
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: Claude Code, guided by my accepted implementation plan, followed by manual review and repository tests
+- What it produced: The implementation added the calendar PATCH update path across the schema, service, controller, and routes, along with focused tests for the new behavior
+- Difficulties: Partial date updates required validation against the stored event state and the pre commit formatter modified many unrelated files because of existing repository formatting differences
+- What changed: I used the stored event to validate the final date range for partial updates, updated the existing service method test and stale repository comment, and discarded unrelated formatter changes after confirming that only the nine intended files were included in the commit
 
 ---
 
