@@ -304,27 +304,22 @@ During the commit, the repository's pre commit hook ran the global formatter and
 
 ## Pull Request
 
-**PR Link:** [GitHub PR URL when opened]
+**PR Link:** https://github.com/NITRR-Official/CampusOS/pull/134
 
-**PR Description:** [what the PR says; much of the content above
-adapts into it]
+**PR Description:** This PR adds PATCH /api/v1/calendar/:eventId for updating existing calendar events. It supports partial updates while preserving validation and the existing calendar:manage authorization. Partial date updates are validated against the stored event state to prevent invalid date ranges, and the existing repository updateEvent method is reused for persistence. The PR also adds focused tests for the new update behavior and fixes #23.
 
 **Maintainer Feedback:**
 
-- [Date]: [feedback received, or "none yet"; silence is a normal
-  state and costs you nothing]
-- [Date]: [how you addressed it]
+- 2026-11-01: None yet, PR is awaiting maintainer review.
 
-**Status:** [Awaiting review / Iterating / Merged / Closed. The
-status is a fact you record, never a grade: the PR is graded as
-opened.]
+**Status:** Awaiting review
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: ship-gate and Claude Code, used to verify the contribution and open the pull request against the CampusOS dev branch
+- What it produced: ship-gate passed the required tests, lint, type check, build, plan fidelity, test evidence, diff quality, and PR checks, and Claude Code opened PR #134
+- Difficulties: The ship-gate hook did not trigger automatically through Claude Code, so I ran ship-gate manually before opening the PR
+- What changed: I used the manual ship-gate check to verify the contribution before pushing the branch and opening the PR
 
 ---
 
