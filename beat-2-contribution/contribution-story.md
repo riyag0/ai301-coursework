@@ -367,6 +367,3 @@ Next time, I would review the repository's architecture decision record and rela
 - CampusOS calendar reference documentation: https://github.com/NITRR-Official/CampusOS/blob/dev/docs/plugins/reference/calendar.md - helped me understand the existing calendar API and was updated during the maintainer requested changes to document the new PATCH endpoint.
 
 - Maintainer review on PR #134: https://github.com/NITRR-Official/CampusOS/pull/134 - identified the missing `calendar:updated` event bus requirement, the redundant database read, error-code improvement, and documentation update that I addressed before re-requesting review.
-
-- [Link to documentation that helped]
-- [Discussion, issue, or post that helped]
