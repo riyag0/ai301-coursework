@@ -68,10 +68,9 @@ I installed the voice-guard PreToolUse hook to check GitHub comment commands bef
 
 I created a ship manifest with the repository's required test, lint, type check, and build commands and used those checks on my contribution branch. The checks confirmed that the calendar tests passed 115/115 along with the repository tests, lint, type check, and build. The ship-gate hook did not trigger correctly through Claude Code, so I switched to running the ship-gate manually before opening the PR. I also documented the repository's existing formatting failures and verified the nine files changed by my implementation separately with Prettier.
 
-**Unit 8: [one line on the tool work]**
+**Unit 8: Monitored my pull request, responded to maintainer feedback, and re-requested review**
 
-[2-4 sentences: the PR-monitor and your playbook. What it read, what it
-drafted, what you did with the draft.]
+I configured the PR monitor and created a playbook with response rules, staleness thresholds, nudge etiquette, and walk away criteria based on the CampusOS contribution guidelines and recent contributor PR activity. The monitor detected the maintainer's requested changes and later generated a draft response after I implemented, tested, and pushed the fixes. I rewrote the draft in my own words, verified that commit c49419a was the PR head, posted the response through Claude Code, and re-requested review. The monitor had Windows encoding and Claude authentication issues, so I enabled Python UTF-8 mode and reran it successfully.
 
 ---
 
@@ -292,6 +291,18 @@ The implementation stayed within the accepted plan. I made two small supporting 
 
 During the commit, the repository's pre commit hook ran the global formatter and modified many unrelated files because the repository already contains formatting differences. Only the nine intended files had been staged, so the implementation commit contained only those files. I discarded the unrelated formatter changes afterward and confirmed that the working tree was clean.
 
+2026-11-01
+
+I completed the final verification for the contribution and opened PR #134 against the CampusOS dev branch. The calendar test suite passed 115/115 tests, and I verified the implementation with the repository's lint, type check, build, and other required checks before opening the pull request.
+
+2026-11-06
+
+I worked on the changes requested by the maintainer. I added the calendar:updated event bus emission, optimized the service so full date updates do not require an unnecessary database read, added the VALIDATION_ERROR code, and documented the PATCH endpoint. I also added tests for the event bus behavior and the optimized date update case.
+
+2026-11-09
+
+I finished verifying the maintainer requested changes. The calendar suite passed 122/122 tests, lint, type check, and build completed successfully. I pushed the changes in commit c49419a and used the PR monitor to check the current PR state and generate a draft response. I rewrote the response, posted it after verifying that the commit was the PR head, and re-requested review from the maintainer. The Vercel deployment check remained failing, while my local calendar tests, lint, type check, and build passed.
+
 
 **Toolkit**
 
@@ -312,14 +323,20 @@ During the commit, the repository's pre commit hook ran the global formatter and
 
 - 2026-11-01: None yet, PR is awaiting maintainer review.
 
+- 2026-11-05: The maintainer requested several changes before merge. The required change was to emit `calendar:updated` with the event ID and event type after a successful update. They also asked me to avoid an unnecessary database read for the full date updates, add a `VALIDATION_ERROR` code to the date-range error, and document the new PATCH endpoint.
+
+- 2026-11-09: I addressed the requested changes in commit c49419a and added tests for the event bus emission and optimized date-update behavior. After verifying the changes with 122/122 calendar tests, lint, type check, and build, I responded to the maintainer and re-requested review.
+
+
 **Status:** Awaiting review
 
 **Toolkit**
 
-- Tool: ship-gate and Claude Code, used to verify the contribution and open the pull request against the CampusOS dev branch
-- What it produced: ship-gate passed the required tests, lint, type check, build, plan fidelity, test evidence, diff quality, and PR checks, and Claude Code opened PR #134
-- Difficulties: The ship-gate hook did not trigger automatically through Claude Code, so I ran ship-gate manually before opening the PR
-- What changed: I used the manual ship-gate check to verify the contribution before pushing the branch and opening the PR
+- Tool: ship-gate, Claude Code, and PR monitor, used to verify the contribution, open the pull request, monitor its status, and respond to maintainer feedback
+- What it produced: ship-gate verified the contribution before the PR was opened, Claude Code opened PR #134, and PR monitor identified the requested changes and later generated a draft response after the fixes were pushed
+- Difficulties: The ship-gate hook did not trigger automatically through Claude Code, and PR monitor initially had Windows encoding and authentication issues
+- What changed: I ran ship-gate manually, enabled Python UTF-8 mode for PR monitor, implemented and tested the maintainer's requested changes, rewrote the generated response in my own words, posted it through Claude Code, and re-requested review
+
 
 ---
 
@@ -327,25 +344,29 @@ During the commit, the repository's pre commit hook ran the global formatter and
 
 **Technical Skills Gained**
 
-[What you learned technically, named concretely.]
+I learned how to add a PATCH endpoint within an existing backend architecture instead of building the update flow from scratch. I worked with partial request validation, service and repository interactions, RBAC permissions, and date-range validation that depends on both the request and stored event state. The maintainer feedback also taught me how the project's event bus is used for lifecycle events and how avoiding an unnecessary database read can make an update operation more efficient.
+
 
 **Challenges Overcome**
 
-[What was hard and how you solved it; point at the real events, the
-Toolkit blocks above are full of them.]
+One challenge was handling partial date updates because changing only `startsAt` or `endsAt` required validating the new value against the date already stored for the event. I handled this by retrieving the stored event only when the other date was needed for validation. Another challenge was keeping my contribution scoped when the repository's formatter modified hundreds of unrelated files, so I kept only my intended files staged and discarded the unrelated changes. I also worked through Windows encoding and authentication issues while using the PR monitor before I could successfully monitor and respond to the maintainer feedback.
+
 
 **What I'd Do Differently Next Time**
 
-[Reflection on your process.]
+Next time, I would review the repository's architecture decision record and related design documentation more closely before implementing the solution. This could have helped me identify the `calendar:updated` event bus requirement before opening the pull request. I would also establish the repository's testing and formatting baseline earlier so that preexisting failures are easier to separate from problems caused by my changes.
 
 ---
 
 ## Resources Used
 
-[What actually helped, not a reading list. List things this story
-already shows you using: the doc you followed to set the environment
-up, the thread that explained the bug, the person who answered you.
-One real entry beats ten plausible ones.]
+- CampusOS issue #23: https://github.com/NITRR-Official/CampusOS/issues/23 - defined the calendar update endpoint requirements and was where I claimed the issue and communicated with the maintainer.
+
+- CampusOS CONTRIBUTING.md: https://github.com/NITRR-Official/CampusOS/blob/dev/docs/contributing/CONTRIBUTING.md - helped me follow the repository's contribution process, required checks, and expected maintainer response times.
+
+- CampusOS calendar reference documentation: https://github.com/NITRR-Official/CampusOS/blob/dev/docs/plugins/reference/calendar.md - helped me understand the existing calendar API and was updated during the maintainer requested changes to document the new PATCH endpoint.
+
+- Maintainer review on PR #134: https://github.com/NITRR-Official/CampusOS/pull/134 - identified the missing `calendar:updated` event bus requirement, the redundant database read, error-code improvement, and documentation update that I addressed before re-requesting review.
 
 - [Link to documentation that helped]
 - [Discussion, issue, or post that helped]
