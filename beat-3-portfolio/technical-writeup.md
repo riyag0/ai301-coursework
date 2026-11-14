@@ -1,8 +1,8 @@
-\# Building a Calendar Event Update API for CampusOS
+# Building a Calendar Event Update API for CampusOS
 
 
 
-\## Overview
+## Overview
 
 
 
@@ -16,7 +16,7 @@ PR link: https://github.com/NITRR-Official/CampusOS/pull/134
 
 
 
-\## What happened
+## What happened
 
 
 
@@ -24,7 +24,7 @@ I started by investigating the existing calendar code to understand what was mis
 
 
 
-\*\*Maintainer feedback:\*\*
+**Maintainer feedback:**
 
 
 
@@ -40,7 +40,7 @@ Based on this feedback, I updated the implementation and added tests for the new
 
 
 
-\*\*Final test results:\*\*
+**Final test results:**
 
 
 
