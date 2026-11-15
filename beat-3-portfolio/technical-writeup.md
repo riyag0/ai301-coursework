@@ -6,7 +6,7 @@
 
 
 
-I contributed to the CampusOS open source project by adding a calendar endpoint that allows users to update existing calendar events. Before my contribution, CampusOS could create and retrieve calendar events, but wasn't able to update the existing events in the calendar. To implement this, I added the PATCH endpoint along with validation and authorization.
+I contributed to the CampusOS open source project by adding a calendar endpoint that allows users to update existing calendar events. Before my contribution, CampusOS could create and retrieve calendar events, but wasn't able to update the existing events in the calendar. To implement this, I added the `PATCH` endpoint along with validation and authorization.
 
 After receiving the feedback from the maintainer, I made the requested code and documentation changes, tested them, and re-requested review.
 
@@ -32,7 +32,7 @@ I started by investigating the existing calendar code to understand what was mis
 
 
 
-> "update should emit calendar:updated with { eventId, eventType }"
+> "update should emit `calendar:updated` with { eventId, eventType }"
 
 
 
