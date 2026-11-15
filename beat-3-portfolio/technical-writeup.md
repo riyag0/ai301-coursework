@@ -56,5 +56,5 @@ After verifying the changes, I pushed the updated implementation, responded to t
 
 ## Limitations and what's next
 
-One limitation is that the PR has not been merged yet and is awaiting another maintainer review. My next step would be to verify that partial date updates and the calendar:updated event continue to work correctly if I make any additional changes based on the next review. I would rerun the calendar test suite after those changes to make sure the update endpoint still passes all tests before updating the pull request.
-
+The endpoint can accept `linkedTaskId` and `linkedEventId`, but it currently does not check whether those 
+IDs point to an existing task or event. One limitation is that the PR has not been merged yet and is awaiting another maintainer review. My next step would be to verify that partial date updates and the `calendar:updated` event continue to work correctly if I make any additional changes based on the next review. I would rerun the calendar test suite after those changes to make sure the update endpoint still passes all tests before updating the pull request.
